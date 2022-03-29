@@ -9,31 +9,34 @@ public class Database {
     public String getRecord(Request request) {
         String record = null;
         int index = request.getIndex();
-        try {
-            record = database[index];
-            if (record==null || record.equals("")) {
-                record = "ERROR";
-            }
-            return record;
+        if (index < 0 || index > 1000) {
+            return "ERROR";
+        }
 
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("Invalid index requested");
+        record = database[index];
+        if (record == null || record.equals("")) {
+            record = "ERROR";
         }
         return record;
+
+
     }
 
-    public void setRecord(Request request){
+    public String setRecord(Request request) {
         int index = request.getIndex();
         String string = request.getValue();
 
-        database[index]=string;
+        database[index] = string;
+        return "OK";
 
     }
 
-    public void deleteRecord(Request request){
+    public String deleteRecord(Request request) {
         int index = request.getIndex();
+        if (index < 0 || index > 1000) return "Error";
 
-        database[index]="";
+        database[index] = "";
+        return "OK";
 
     }
 

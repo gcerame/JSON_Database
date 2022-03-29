@@ -11,6 +11,7 @@ public class Main {
     static final String CLIENT_STARTED = "Client started!";
 
     public static void main(String[] args) {
+
         Scanner sc = new Scanner(System.in);
         String address = "127.0.0.1";
         int port = 23456;
@@ -21,12 +22,15 @@ public class Main {
                 DataOutputStream output = new DataOutputStream(socket.getOutputStream())
         ) {
             System.out.println(CLIENT_STARTED);
-            while (true){
-                String userInput = sc.nextLine();
-                output.writeUTF(userInput);
+
+            String userInput = String.join(" ", args);
+//            String userInput = sc.nextLine();
+            output.writeUTF(userInput);
+            String inputFromServer = input.readUTF();
+            if (!inputFromServer.isEmpty()) {
+                System.out.println("Received: " + inputFromServer);
+
             }
-
-
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
