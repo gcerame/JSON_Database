@@ -16,21 +16,9 @@ public class Request {
     @Parameter(names = {"-i"}, description = "Index")
     private int index;
 
-    @Parameter(names = {"-m"}, description = "Value to save")
-    private String value;
+    @Parameter(names = {"-m"}, description = "Value to save", variableArity = true)
+    private ArrayList<String> values = new ArrayList<>();
 
-    public void setType(String type) {
-        this.type = type;
-
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public void setValue(String value){
-        this.value = value;
-    }
 
     public List<String> getParameters() {
         return parameters;
@@ -45,7 +33,7 @@ public class Request {
     }
 
     public String getValue() {
-        return value;
+        return String.join(" ",values);
     }
 
 

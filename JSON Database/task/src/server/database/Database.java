@@ -10,7 +10,7 @@ public class Database {
         String record = null;
         int index = request.getIndex();
         try {
-            record = database[index - 1];
+            record = database[index];
             if (record==null || record.equals("")) {
                 record = "ERROR";
             }

@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 
 public class Main {
@@ -21,25 +22,42 @@ public class Main {
         System.out.println("Server started!");
         database = new Database();
 
-        try (ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName(address));
-             Socket socket = server.accept();
-             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
-            String inputLine;
-            while ((inputLine = input.readLine()) != null) {
-                String[] userRequest;
-                System.out.println(inputLine);
-                userRequest = inputLine.split(" ");
-                Request request = new Request();
-                JCommander.newBuilder()
-                        .addObject(request)
-                        .build()
-                        .parse(userRequest);
-                processType(request);
-            }
+        while (true) {
+            try (ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName(address));
+                 Socket socket = server.accept();
+                 DataInputStream input = new DataInputStream(socket.getInputStream());
+                 DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
 
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+                while (true) {
+                    String requestString = input.readUTF();
+                    if (requestString.isEmpty() || requestString.isBlank()) {
+                        continue;
+                    }
+
+                    System.out.println(requestString);
+                    String[] requestArray = requestString.split(" ");
+                    Request request = new Request();
+                    JCommander.newBuilder()
+                            .addObject(request)
+                            .build()
+                            .parse(requestArray);
+                    switch (request.getType()) {
+                        case "get":
+                            String record = database.getRecord(request);
+                            output.writeUTF(record);
+                            break;
+                        case "set":
+                            database.setRecord(request);
+                            break;
+                        case "delete":
+                            break;
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + request.getType());
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
         }
 
 
@@ -48,16 +66,7 @@ public class Main {
 
     public static void processType(Request request) {
 
-        switch (request.getType()) {
-            case "get":
-                String record = database.getRecord(request);
-                break;
-            case "set":
-                break;
-            case "delete":
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + request.getType());
-        }
+
+
     }
 }
