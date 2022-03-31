@@ -1,43 +1,48 @@
 package server.database;
 
 import server.commands.Request;
+import server.commands.Response;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Database {
 
-    private String[] database = new String[1000];
+    private Map<String, String> database = new HashMap<>();
 
-    public String getRecord(Request request) {
-        String record = null;
-        int index = request.getIndex();
-        if (index < 0 || index > 1000) {
-            return "ERROR";
+    public Response getRecord(String key) {
+        Response response = new Response();
+        String value = database.get(key);
+        if (value == null) {
+            response.setResponse("ERROR");
+            response.setReason("No such key");
+        } else {
+            response.setResponse("OK");
+            response.setValue(value);
         }
-
-        record = database[index];
-        if (record == null || record.equals("")) {
-            record = "ERROR";
-        }
-        return record;
-
+        return response;
 
     }
 
     public String setRecord(Request request) {
-        int index = request.getIndex();
-        String string = request.getValue();
 
-        database[index] = string;
+        database.put(request.getKey(), request.getValue());
+
         return "OK";
 
     }
 
-    public String deleteRecord(Request request) {
-        int index = request.getIndex();
-        if (index < 0 || index > 1000) return "Error";
+    public Response deleteRecord(Request request) {
+        Response response = new Response();
+        String deletedRecord = database.remove(request.getKey());
 
-        database[index] = "";
-        return "OK";
-
+        if (deletedRecord == null) {
+            response.setResponse("ERROR");
+            response.setReason("No such key");
+        } else {
+            response.setResponse("OK");
+        }
+        return response;
     }
 
 }

@@ -1,7 +1,8 @@
 package server;
 
-import com.beust.jcommander.JCommander;
+import com.google.gson.Gson;
 import server.commands.Request;
+import server.commands.Response;
 import server.database.Database;
 
 import java.io.*;
@@ -11,56 +12,56 @@ import java.net.Socket;
 
 
 public class Main {
-    private static Database database;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
+        final String ADDRESS = "127.0.0.1";
+        final int PORT = 23456;
+        Database database = new Database();
 
-        String address = "127.0.0.1";
-        int port = 23456;
-        database = new Database();
-        try (ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName(address))) {
+        try (ServerSocket server = new ServerSocket(PORT, 50, InetAddress.getByName(ADDRESS))) {
             System.out.println("Server started!");
-            boolean exit = false;
 
             while (true) {
-                try (
-                        Socket socket = server.accept();
-                        DataInputStream input = new DataInputStream(socket.getInputStream());
-                        DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
+                try (Socket socket = server.accept();
+                     DataInputStream input = new DataInputStream(socket.getInputStream());
+                     DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
 
                     String requestString = input.readUTF();
+
                     if (requestString.isEmpty() || requestString.isBlank()) {
                         continue;
                     }
 
-//                    System.out.println("Received: " + requestString);
-                    String[] requestArray = requestString.split(" ");
-                    Request request = new Request();
-                    JCommander.newBuilder()
-                            .addObject(request)
-                            .build()
-                            .parse(requestArray);
+                    Gson gson = new Gson();
+                    Request request = gson.fromJson(requestString, Request.class);
+                    Response response = new Response();
+                    String JSONResponse;
+
                     switch (request.getType()) {
                         case "exit":
-                            output.writeUTF("OK");
-                            exit = true;
+                            response.setResponse("OK");
+                            JSONResponse = gson.toJson(response);
+                            output.writeUTF(JSONResponse);
                             System.exit(1);
                             break;
                         case "get":
-                            String record = database.getRecord(request);
-                            output.writeUTF(record);
+                            response = database.getRecord(request.getKey());
+                            JSONResponse = gson.toJson(response);
+                            output.writeUTF(JSONResponse);
                             break;
                         case "set":
-                            output.writeUTF(database.setRecord(request));
+                            response.setResponse(database.setRecord(request));
+                            JSONResponse = gson.toJson(response);
+                            output.writeUTF(JSONResponse);
                             break;
                         case "delete":
-                            output.writeUTF(database.deleteRecord(request));
+                            JSONResponse = gson.toJson(database.deleteRecord(request));
+                            output.writeUTF(JSONResponse);
                             break;
                         default:
                             throw new IllegalStateException("Unexpected value: " + request.getType());
                     }
-
                 }
             }
         } catch (IOException e) {
