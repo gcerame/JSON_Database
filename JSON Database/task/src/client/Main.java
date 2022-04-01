@@ -13,15 +13,15 @@ import java.util.Scanner;
 
 public class Main {
     static final String CLIENT_STARTED = "Client started!";
-
+    static final String ADDRESS = "127.0.0.1";
+    static final int PORT = 23456;
     public static void main(String[] args) {
         Gson gson = new Gson();
         Scanner sc = new Scanner(System.in);
-        String address = "127.0.0.1";
-        int port = 23456;
+
 
         try (
-                Socket socket = new Socket(InetAddress.getByName(address), port);
+                Socket socket = new Socket(InetAddress.getByName(ADDRESS), PORT);
                 DataInputStream input = new DataInputStream(socket.getInputStream());
                 DataOutputStream output = new DataOutputStream(socket.getOutputStream())
         ) {

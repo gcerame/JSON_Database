@@ -51,7 +51,7 @@ public class Main {
                             output.writeUTF(JSONResponse);
                             break;
                         case "set":
-                            response.setResponse(database.setRecord(request));
+                            response = database.setRecord(request);
                             JSONResponse = gson.toJson(response);
                             output.writeUTF(JSONResponse);
                             break;

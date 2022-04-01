@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Database {
+    static final String ERROR = "Error";
+    static final String NO_SUCH_KEY = "No such key";
+    static final String OK = "OK";
 
     private Map<String, String> database = new HashMap<>();
 
@@ -14,21 +17,25 @@ public class Database {
         Response response = new Response();
         String value = database.get(key);
         if (value == null) {
-            response.setResponse("ERROR");
-            response.setReason("No such key");
+            response.setResponse(ERROR);
+            response.setReason(NO_SUCH_KEY);
         } else {
-            response.setResponse("OK");
+            response.setResponse(OK);
             response.setValue(value);
         }
         return response;
 
     }
 
-    public String setRecord(Request request) {
-
+    public Response setRecord(Request request) {
+        Response response = new Response();
         database.put(request.getKey(), request.getValue());
 
-        return "OK";
+        response.setResponse(OK);
+        response.setValue(null);
+        response.setReason(null);
+
+        return response;
 
     }
 
@@ -37,10 +44,10 @@ public class Database {
         String deletedRecord = database.remove(request.getKey());
 
         if (deletedRecord == null) {
-            response.setResponse("ERROR");
-            response.setReason("No such key");
+            response.setResponse(ERROR);
+            response.setReason(NO_SUCH_KEY);
         } else {
-            response.setResponse("OK");
+            response.setResponse(OK);
         }
         return response;
     }
