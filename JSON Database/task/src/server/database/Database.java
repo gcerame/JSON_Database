@@ -82,11 +82,11 @@ public class Database {
             FileWriter writer = new FileWriter(PATH);
             writer.write(new Gson().toJson(database));
             writer.close();
+            writeLock.unlock();
+
             response.setResponse(OK);
             response.setReason(null);
 
-
-            writeLock.unlock();
 
         } catch (Exception ignored) {
 
@@ -99,14 +99,21 @@ public class Database {
 
     public Response deleteRecord(Request request) {
         Response response = new Response();
+
         try {
             writeLock.lock();
             FileReader reader = new FileReader(PATH);
             Map<String, String> database = new Gson().fromJson(reader, Map.class);
             reader.close();
+            writeLock.unlock();
 
             if (database.containsKey(request.getKey())) {
                 database.remove(request.getKey());
+                writeLock.lock();
+                FileWriter writer = new FileWriter(PATH);
+                writer.write(new Gson().toJson(database));
+                writer.close();
+                writeLock.unlock();
                 response.setResponse(OK);
 
             } else {

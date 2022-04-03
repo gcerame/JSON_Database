@@ -4,10 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.google.gson.Gson;
 import server.commands.Request;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
@@ -27,31 +24,29 @@ public class Main {
             DataOutputStream output = new DataOutputStream(socket.getOutputStream());
             System.out.println(CLIENT_STARTED);
             Request request = new Request();
-            //TODO: move repeating code to method
+
             JCommander.newBuilder()
                     .addObject(request)
                     .build()
                     .parse(args);
             request.valuesListToString();
-
-            if (request.getFileName()!=null){
-                FileReader reader = new FileReader(REQUESTFILE_PATH+request.getFileName());
-                String [] fileRequest = reader.toString().split(" ");
-                JCommander.newBuilder()
-                        .addObject(request)
-                        .build()
-                        .parse(fileRequest);
-                request.valuesListToString();
-
-            }
-
-
-            if (!request.getType().equals("set")) {
-                request.nullValue();
-            }
+            request.setKey();
 
             String JSONRequest = gson.toJson(request);
+            if (request.getType()!=null && !request.getType().equals("set")) {
+                request.nullValue();
+                JSONRequest = gson.toJson(request);
+
+            }
+            if (request.getFileName()!=null){
+                File file = new File(REQUESTFILE_PATH+request.getFileName());
+                Scanner sc = new Scanner (file);
+                JSONRequest=sc.nextLine();
+
+            }
             System.out.println("Sent: " + JSONRequest);
+
+
 
             output.writeUTF(JSONRequest);
             String inputFromServer = input.readUTF();

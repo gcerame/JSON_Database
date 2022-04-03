@@ -35,7 +35,7 @@ public class ConnectionWorker implements Runnable {
         } catch (IOException e) {
         }
 
-        if (clientMessage.isEmpty() || clientMessage.isBlank()) {
+        if (clientMessage==null || clientMessage.isBlank()) {
             return;
         }
 
