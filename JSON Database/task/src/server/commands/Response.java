@@ -8,6 +8,18 @@ public class Response {
 
     private String reason;
 
+    public String getResponse() {
+        return response;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     private String value = null;
 
     public void setResponse(String response) {

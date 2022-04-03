@@ -16,6 +16,10 @@ public class Request {
     private transient List<String> values = new ArrayList<>();
     private String value = null;
 
+
+    @Parameter(names = {"-in"}, description = "file name")
+    String fileName;
+
     public void valuesListToString() {
         value = String.join(" ", values);
     }
@@ -36,5 +40,8 @@ public class Request {
         return value;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
 
 }

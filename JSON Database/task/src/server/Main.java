@@ -11,61 +11,47 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 
+//Todo: get rid of magic strings
 public class Main {
+    private static ServerSocket serverSocket;
+    private static final String ADDRESS = "127.0.0.1";
+    private static final int PORT = 23456;
 
     public static void main(String[] args) {
 
-        final String ADDRESS = "127.0.0.1";
-        final int PORT = 23456;
+
         Database database = new Database();
 
-        try (ServerSocket server = new ServerSocket(PORT, 50, InetAddress.getByName(ADDRESS))) {
-            System.out.println("Server started!");
+        createServerSocket();
+        System.out.println("Server started!");
+        createClientSocket(database);
+        try {
+            serverSocket.close();
+        } catch (Exception ignored) {
+        }
 
-            while (true) {
-                try (Socket socket = server.accept();
-                     DataInputStream input = new DataInputStream(socket.getInputStream());
-                     DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
+    }
 
-                    String requestString = input.readUTF();
-
-                    if (requestString.isEmpty() || requestString.isBlank()) {
-                        continue;
-                    }
-
-                    Gson gson = new Gson();
-                    Request request = gson.fromJson(requestString, Request.class);
-                    Response response = new Response();
-                    String JSONResponse;
-
-                    switch (request.getType()) {
-                        case "exit":
-                            response.setResponse("OK");
-                            JSONResponse = gson.toJson(response);
-                            output.writeUTF(JSONResponse);
-                            System.exit(1);
-                            break;
-                        case "get":
-                            response = database.getRecord(request.getKey());
-                            JSONResponse = gson.toJson(response);
-                            output.writeUTF(JSONResponse);
-                            break;
-                        case "set":
-                            response = database.setRecord(request);
-                            JSONResponse = gson.toJson(response);
-                            output.writeUTF(JSONResponse);
-                            break;
-                        case "delete":
-                            JSONResponse = gson.toJson(database.deleteRecord(request));
-                            output.writeUTF(JSONResponse);
-                            break;
-                        default:
-                            throw new IllegalStateException("Unexpected value: " + request.getType());
-                    }
+    private static void createClientSocket(Database database) {
+        try {
+            while (!serverSocket.isClosed()) {
+                final Socket clientSocket = serverSocket.accept();
+                if (clientSocket != null) {
+                    new Thread(new ConnectionWorker(clientSocket, serverSocket, database)).start();
                 }
             }
-        } catch (IOException e) {
-            System.out.println("Error: " + e.getMessage());
+
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static void createServerSocket() {
+        while (true) {
+            try {
+                serverSocket = new ServerSocket(PORT, 50, InetAddress.getByName(ADDRESS));
+                return;
+            } catch (IOException e) {
+            }
         }
     }
 }
