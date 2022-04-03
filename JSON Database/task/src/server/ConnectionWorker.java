@@ -65,19 +65,20 @@ public class ConnectionWorker implements Runnable {
                     outputStream.writeUTF(JSONResponse);
                     break;
                 case "delete":
-                    JSONResponse = gson.toJson(database.deleteRecord(request));
+                    response = database.deleteRecord(request);
+                    JSONResponse = gson.toJson(response);
                     outputStream.writeUTF(JSONResponse);
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + request.getType());
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
             try {
                 clientSocket.close();
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
             }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
 
